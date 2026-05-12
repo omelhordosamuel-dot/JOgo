@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gabriel Piece MMORPG</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="menu-open">
+  <div id="menu" class="overlay menu-overlay">
+    <div class="menu-sunburst"></div>
+    <div class="menu-content">
+      <p class="menu-kicker">Ilha Inicial</p>
+      <h1 class="menu-title">GABRIEL PIECE</h1>
+      <p class="menu-subtitle">Aventure-se pelos mares, lute contra piratas e desperte poderes de fruta.</p>
+      <div class="menu-actions">
+        <button id="startButton" class="menu-button primary" onclick="iniciarJogo()" disabled>Carregando...</button>
+        <button class="menu-button secondary" onclick="mostrarControles()">Controles</button>
+      </div>
+      <div id="menuInfo" class="menu-info">
+        WASD para mover, J para atacar e E para interagir.
+      </div>
+    </div>
+  </div>
+
+  <div id="spinBox" class="overlay hidden">
+    <h1>Giro de Fruta</h1>
+    <p>Custo: 25 moedas</p>
+    <div id="spinResultado">Girando...</div>
+    <button onclick="fecharSpin()">Continuar</button>
+  </div>
+
+  <div id="gameOver" class="overlay hidden">
+    <h1>Voce foi derrotado</h1>
+    <p id="textoGameOver"></p>
+    <button onclick="reiniciar()">Renascer nas docas</button>
+  </div>
+
+  <div id="hud">
+    <div class="hud-panel hud-player">
+      <div class="hud-title">Gabriel</div>
+      <div class="hud-row">
+        <span>Vida</span>
+        <strong><span id="vidaHud">100</span></strong>
+      </div>
+      <div class="hud-bar"><div id="vidaBar" class="hud-bar-fill vida-fill"></div></div>
+    </div>
+
+    <div class="hud-panel hud-progress">
+      <div class="hud-row">
+        <span>Nivel</span>
+        <strong id="nivelHud">1</strong>
+      </div>
+      <div class="hud-row">
+        <span>XP</span>
+        <strong><span id="xpHud">0</span>/<span id="xpMaxHud">50</span></strong>
+      </div>
+      <div class="hud-bar"><div id="xpBar" class="hud-bar-fill xp-fill"></div></div>
+    </div>
+
+    <div class="hud-panel hud-resources">
+      <div class="hud-row">
+        <span>Moedas</span>
+        <strong id="moedasHud">0</strong>
+      </div>
+      <div class="hud-row">
+        <span>Fruta</span>
+        <strong id="frutaHud">Nenhuma</strong>
+      </div>
+    </div>
+
+    <div class="hud-panel hud-quest">
+      <div class="hud-title">Missao</div>
+      <div id="missaoHud">Fale com o NPC</div>
+    </div>
+  </div>
+
+  <div id="hotbar">
+    <div class="hotbar-slot active" data-slot="0"><div class="slot-key">1</div></div>
+    <div class="hotbar-slot" data-slot="1"><div class="slot-key">2</div></div>
+    <div class="hotbar-slot" data-slot="2"><div class="slot-key">3</div></div>
+    <div class="hotbar-slot" data-slot="3"><div class="slot-key">4</div></div>
+    <div class="hotbar-slot" data-slot="4"><div class="slot-key">5</div></div>
+    <div class="hotbar-slot" data-slot="5"><div class="slot-key">6</div></div>
+    <div class="hotbar-slot" data-slot="6"><div class="slot-key">7</div></div>
+    <div class="hotbar-slot" data-slot="7"><div class="slot-key">8</div></div>
+    <div class="hotbar-slot" data-slot="8"><div class="slot-key">9</div></div>
+  </div>
+
+  <div id="dialogo">
+    <div id="dialogoTexto"></div>
+    <button onclick="aceitarMissao()">Aceitar missao</button>
+    <button onclick="fecharDialogo()">Fechar</button>
+  </div>
+
+  <div id="toast"></div>
+  <canvas id="game"></canvas>
+
+  <script src="js/config.js"></script>
+  <script src="js/utils.js"></script>
+  <script src="js/assets.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/map.js"></script>
+  <script src="js/entities.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
