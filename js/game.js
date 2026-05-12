@@ -1045,13 +1045,15 @@ GP.Game.prototype.drawImpactEffects = function(ctx) {
     const frame = Math.min(effect.frames - 1, Math.floor(progress * effect.frames));
     const frameW = Math.floor(sheet.width / effect.frames);
     const frameH = sheet.height;
-    const size = effect.size * (0.86 + progress * 0.2);
+    const width = effect.width * (0.86 + progress * 0.18);
+    const height = effect.height * (0.9 + progress * 0.16);
+    const push = effect.fromFist ? progress * 36 : progress * 18;
 
     ctx.save();
-    ctx.translate(effect.x, effect.y - 12);
+    ctx.translate(effect.x, effect.y);
     ctx.rotate(effect.angle);
     ctx.globalAlpha = 1 - Math.max(0, progress - 0.62) / 0.38;
-    ctx.drawImage(sheet, frame * frameW, 0, frameW, frameH, -size / 2, -size / 2, size, size);
+    ctx.drawImage(sheet, frame * frameW, 0, frameW, frameH, -12 + push, -height / 2, width, height);
     ctx.restore();
   }
 };
