@@ -216,33 +216,39 @@ GP.Game.prototype.basicPunchAt = function(targetX, targetY) {
   this.player.facing = this.getFacingDirection(this.player.dirX, this.player.dirY);
   this.player.cooldownAtaque = 22;
   this.player.estado = "punch";
-  this.player.estadoTempo = 16;
-  this.player.actionDuration = 16;
+  this.player.estadoTempo = 18;
+  this.player.actionDuration = 18;
+
+  const handX = this.player.x + this.player.dirX * 28 + (Math.abs(this.player.dirY) > Math.abs(this.player.dirX) ? 0 : this.player.dirX * 8);
+  const handY = this.player.y + this.player.dirY * 28 - 22;
 
   this.attacks.push({
-    x: this.player.x + this.player.dirX * 42,
-    y: this.player.y + this.player.dirY * 42,
-    vx: this.player.dirX * 2,
-    vy: this.player.dirY * 2,
-    r: 24,
+    x: this.player.x + this.player.dirX * 56,
+    y: this.player.y + this.player.dirY * 56,
+    vx: this.player.dirX * 5.5,
+    vy: this.player.dirY * 5.5,
+    r: 30,
     dano: this.player.dano,
-    vida: 7,
+    vida: 10,
     cor: "#fff7d1",
     melee: true
   });
 
-  this.createPunchImpact(this.player.x + this.player.dirX * 42, this.player.y + this.player.dirY * 42, Math.atan2(this.player.dirY, this.player.dirX));
+  this.createPunchImpact(handX, handY, Math.atan2(this.player.dirY, this.player.dirX), { fromFist: true });
 };
 
-GP.Game.prototype.createPunchImpact = function(x, y, angle) {
+GP.Game.prototype.createPunchImpact = function(x, y, angle, options) {
+  const data = options || {};
   this.impactEffects.push({
     x,
     y,
     angle,
     age: 0,
-    duration: 18,
-    frames: 10,
-    size: 86
+    duration: data.duration || 24,
+    frames: data.frames || 12,
+    width: data.width || 168,
+    height: data.height || 96,
+    fromFist: !!data.fromFist
   });
 };
 
@@ -483,7 +489,7 @@ GP.Game.prototype.updateAttacks = function() {
         enemy.vida -= attack.dano;
         this.pushObject(enemy, this.player.x, this.player.y, 22);
         if (attack.gelo) enemy.velocidade *= 0.7;
-        if (attack.melee) this.createPunchImpact(enemy.x, enemy.y, Math.atan2(enemy.y - this.player.y, enemy.x - this.player.x));
+        if (attack.melee) this.createPunchImpact(enemy.x - attack.vx * 2, enemy.y - attack.vy * 2 - 12, Math.atan2(attack.vy, attack.vx), { duration: 20, width: 142, height: 86 });
         else this.createParticles(enemy.x, enemy.y, attack.cor, 20);
         this.createText(enemy.x, enemy.y - 35, "-" + attack.dano, attack.cor);
         this.attacks.splice(i, 1);
@@ -886,18 +892,19 @@ GP.Game.prototype.drawPlayerSprite = function(ctx, pose) {
 
 GP.Game.prototype.drawPunchSprite = function(ctx, pose) {
   const frontPunch = this.player.facing === "down" && GP.Assets.cleanPunchFrontSheet;
-  const sheet = frontPunch ? GP.Assets.cleanPunchFrontSheet : GP.Assets.cleanPunchSheet;
+  const backPunch = this.player.facing === "up" && GP.Assets.cleanPunchBackSheet;
+  const sheet = frontPunch ? GP.Assets.cleanPunchFrontSheet : backPunch ? GP.Assets.cleanPunchBackSheet : GP.Assets.cleanPunchSheet;
   const actionProgress = Math.max(0, Math.min(0.999, pose.actionProgress || 0));
   const frame = Math.floor(actionProgress * 4);
   const frameW = Math.floor(sheet.width / 4);
   const frameH = sheet.height;
-  const flip = !frontPunch && this.player.dirX < 0;
+  const flip = !frontPunch && !backPunch && this.player.dirX < 0;
 
   ctx.save();
   ctx.translate(this.player.x, this.player.y);
-  ctx.rotate(frontPunch ? 0 : (this.player.dirY || 0) * 0.07);
+  ctx.rotate(frontPunch || backPunch ? 0 : (this.player.dirY || 0) * 0.07);
   ctx.scale(flip ? -1 : 1, 1);
-  ctx.drawImage(sheet, frame * frameW, 0, frameW, frameH, frontPunch ? -31 : -30, frontPunch ? -59 : -58, frontPunch ? 62 : 62, 72);
+  ctx.drawImage(sheet, frame * frameW, 0, frameW, frameH, frontPunch || backPunch ? -31 : -30, frontPunch || backPunch ? -59 : -58, 62, 72);
   ctx.restore();
 };
 

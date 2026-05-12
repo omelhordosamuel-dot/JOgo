@@ -10,6 +10,7 @@ GP.Assets = {
   cleanPlayerSheet: null,
   cleanPunchSheet: null,
   cleanPunchFrontSheet: null,
+  cleanPunchBackSheet: null,
   cleanPunchImpactSheet: null,
   loaded: false,
 
@@ -17,7 +18,7 @@ GP.Assets = {
     this.mapBase = null;
     this.propsAtlas = this.createPropsAtlas(1024, 768);
     this.natureAtlas = this.createNatureAtlas(1024, 512);
-    let pending = 9;
+    let pending = 10;
     let failed = false;
 
     const done = () => {
@@ -57,13 +58,21 @@ GP.Assets = {
     punchFrontSheet.onerror = done;
     punchFrontSheet.src = "assets/combat/base-punch-front-sheet-raw.png";
 
+    const punchBackSheet = new Image();
+    punchBackSheet.onload = () => {
+      this.cleanPunchBackSheet = this.removeChromaKey(punchBackSheet, { r: 0, g: 255, b: 0 });
+      done();
+    };
+    punchBackSheet.onerror = done;
+    punchBackSheet.src = "assets/combat/base-punch-back-sheet-raw.png";
+
     const punchImpactSheet = new Image();
     punchImpactSheet.onload = () => {
       this.cleanPunchImpactSheet = this.removeChromaKey(punchImpactSheet, { r: 0, g: 255, b: 0 });
       done();
     };
     punchImpactSheet.onerror = done;
-    punchImpactSheet.src = "assets/combat/punch-impact-sheet-raw.png";
+    punchImpactSheet.src = "assets/combat/ig_0e6cbe9eaa7dfd8d016a03804702bc8198b91dd708505b7210.png";
 
     ["water", "sand", "grass", "dirt"].forEach(name => {
       const img = new Image();
