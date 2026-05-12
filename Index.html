@@ -18,7 +18,7 @@
         <button class="menu-button secondary" onclick="mostrarControles()">Controles</button>
       </div>
       <div id="menuInfo" class="menu-info">
-        WASD para mover, J para atacar e E para interagir.
+        WASD para mover, mouse para atacar com o slot 1 e E para interagir.
       </div>
     </div>
   </div>
@@ -69,14 +69,20 @@
       </div>
     </div>
 
-    <div class="hud-panel hud-quest">
-      <div class="hud-title">Missao</div>
-      <div id="missaoHud">Fale com o NPC</div>
+    <div class="hud-panel hud-quest minimized" id="questPanel">
+      <div class="quest-header">
+        <div class="hud-title">Missao</div>
+        <button id="questToggle" class="quest-toggle" type="button" onclick="alternarMissao()" aria-label="Minimizar ou abrir missao">+</button>
+      </div>
+      <div id="missaoHud" class="quest-body">Fale com o NPC</div>
     </div>
   </div>
 
   <div id="hotbar">
-    <div class="hotbar-slot active" data-slot="0"><div class="slot-key">1</div></div>
+    <div class="hotbar-slot active equipped" data-slot="0">
+      <img class="slot-item-icon" src="assets/combat/base-punch-icon.png" alt="Estilo de luta base">
+      <div class="slot-key">1</div>
+    </div>
     <div class="hotbar-slot" data-slot="1"><div class="slot-key">2</div></div>
     <div class="hotbar-slot" data-slot="2"><div class="slot-key">3</div></div>
     <div class="hotbar-slot" data-slot="3"><div class="slot-key">4</div></div>
@@ -85,6 +91,11 @@
     <div class="hotbar-slot" data-slot="6"><div class="slot-key">7</div></div>
     <div class="hotbar-slot" data-slot="7"><div class="slot-key">8</div></div>
     <div class="hotbar-slot" data-slot="8"><div class="slot-key">9</div></div>
+  </div>
+
+  <div id="questCompleteNotice" class="quest-complete-notice hidden">
+    <div class="quest-complete-title">Missao completa!</div>
+    <div id="questCompleteText" class="quest-complete-text"></div>
   </div>
 
   <div id="dialogo">

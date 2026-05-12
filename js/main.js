@@ -29,6 +29,7 @@ window.addEventListener("DOMContentLoaded", () => {
   window.aceitarMissao = () => game.acceptQuest();
   window.fecharDialogo = () => GP.UI.closeDialog();
   window.fecharSpin = () => GP.UI.closeSpin();
+  window.alternarMissao = () => GP.UI.toggleQuestMinimized();
   window.mostrarControles = () => {
     const info = document.getElementById("menuInfo");
     if (info) info.classList.toggle("visible");

@@ -10,6 +10,10 @@ GP.UI = {
     this.dialogo = document.getElementById("dialogo");
     this.dialogoTexto = document.getElementById("dialogoTexto");
     this.toast = document.getElementById("toast");
+    this.questPanel = document.getElementById("questPanel");
+    this.questToggle = document.getElementById("questToggle");
+    this.questCompleteNotice = document.getElementById("questCompleteNotice");
+    this.questCompleteText = document.getElementById("questCompleteText");
     this.hud = {
       vida: document.getElementById("vidaHud"),
       nivel: document.getElementById("nivelHud"),
@@ -21,6 +25,7 @@ GP.UI = {
       vidaBar: document.getElementById("vidaBar"),
       xpBar: document.getElementById("xpBar")
     };
+    this.setQuestMinimized(true);
   },
 
   hideMenu() {
@@ -36,6 +41,30 @@ GP.UI = {
     this.toastTimer = setTimeout(() => {
       this.toast.style.display = "none";
     }, 2600);
+  },
+
+  setQuestMinimized(minimized) {
+    if (!this.questPanel || !this.questToggle) return;
+    this.questPanel.classList.toggle("minimized", minimized);
+    this.questToggle.textContent = minimized ? "+" : "-";
+  },
+
+  toggleQuestMinimized() {
+    if (!this.questPanel) return;
+    this.setQuestMinimized(!this.questPanel.classList.contains("minimized"));
+  },
+
+  showQuestComplete(title, rewardText) {
+    if (!this.questCompleteNotice) return;
+    if (this.questCompleteText) this.questCompleteText.textContent = rewardText || title || "";
+    this.questCompleteNotice.classList.remove("hidden");
+    this.questCompleteNotice.style.animation = "none";
+    this.questCompleteNotice.offsetHeight;
+    this.questCompleteNotice.style.animation = "";
+    clearTimeout(this.questCompleteTimer);
+    this.questCompleteTimer = setTimeout(() => {
+      this.questCompleteNotice.classList.add("hidden");
+    }, 2850);
   },
 
   showDialog(html) {

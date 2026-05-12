@@ -172,7 +172,8 @@ canvas {
 }
 
 body.menu-open .hud-panel,
-body.menu-open #hotbar {
+body.menu-open #hotbar,
+body.menu-open .quest-complete-notice {
   display: none;
 }
 
@@ -278,6 +279,57 @@ button:hover {
   transform: translateX(-50%);
 }
 
+.hud-quest.minimized {
+  width: 188px;
+  min-height: 46px;
+  padding: 9px 12px;
+}
+
+.quest-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.quest-header .hud-title {
+  margin-bottom: 0;
+}
+
+.quest-toggle {
+  width: 28px;
+  height: 28px;
+  margin: 0;
+  padding: 0;
+  border: 2px solid rgba(255, 237, 164, 0.9);
+  border-radius: 6px;
+  background:
+    linear-gradient(rgba(255, 235, 128, 0.18), rgba(34, 16, 5, 0.28)),
+    url("../assets/ui/hotbar-slot-pirate.png") center / 100% 100% no-repeat;
+  color: #ffe66d;
+  font-size: 20px;
+  font-weight: 900;
+  line-height: 20px;
+  pointer-events: auto;
+  box-shadow: 0 3px 0 #3a1a08, 0 0 12px rgba(255, 230, 109, 0.28);
+}
+
+.quest-toggle:hover {
+  background:
+    linear-gradient(rgba(255, 246, 184, 0.26), rgba(34, 16, 5, 0.16)),
+    url("../assets/ui/hotbar-slot-pirate.png") center / 100% 100% no-repeat;
+}
+
+.quest-body {
+  margin-top: 7px;
+  color: #fff7d8;
+  font-weight: 800;
+}
+
+.hud-quest.minimized .quest-body {
+  display: none;
+}
+
 .hud-title {
   margin-bottom: 6px;
   color: #ffe66d;
@@ -362,10 +414,34 @@ button:hover {
   box-shadow: 0 0 0 2px #fff2a6, 0 0 18px rgba(255, 230, 109, 0.7), inset 0 0 14px rgba(0, 0, 0, 0.22);
 }
 
+.hotbar-slot.equipped::after {
+  content: "";
+  position: absolute;
+  inset: 9px;
+  border-radius: 5px;
+  background: radial-gradient(circle, rgba(255, 231, 118, 0.18), transparent 66%);
+  pointer-events: none;
+}
+
+.slot-item-icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 1;
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.85));
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
 .slot-key {
   position: absolute;
   right: 6px;
   bottom: 5px;
+  z-index: 2;
   min-width: 14px;
   color: #ffe66d;
   font-size: 13px;
@@ -404,6 +480,55 @@ button:hover {
   border-radius: 10px;
   background: rgba(0, 0, 0, 0.75);
   font-size: 16px;
+}
+
+.quest-complete-notice {
+  position: fixed;
+  left: 50%;
+  top: 20%;
+  z-index: 40;
+  width: min(560px, calc(100vw - 30px));
+  min-height: 112px;
+  padding: 28px 30px 24px;
+  border-radius: 11px;
+  background:
+    linear-gradient(rgba(14, 8, 2, 0.08), rgba(14, 8, 2, 0.18)),
+    url("../assets/ui/quest-complete-banner.png") center / 100% 100% no-repeat;
+  color: #fff6ce;
+  text-align: center;
+  text-shadow: 0 3px 0 #2c1203, 0 0 14px rgba(0, 0, 0, 0.75);
+  pointer-events: none;
+  transform: translateX(-50%) scale(0.9);
+  animation: questCompletePop 2.8s ease both;
+}
+
+.quest-complete-title {
+  color: #ffe66d;
+  font-size: 28px;
+  font-weight: 900;
+}
+
+.quest-complete-text {
+  margin-top: 5px;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+@keyframes questCompletePop {
+  0% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-28px) scale(0.82);
+  }
+
+  12%, 78% {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-18px) scale(0.96);
+  }
 }
 
 #spinResultado {
@@ -472,6 +597,10 @@ button:hover {
     font-size: 12px;
   }
 
+  .hud-quest.minimized {
+    width: 160px;
+  }
+
   #hotbar {
     max-width: calc(100vw - 16px);
     gap: 3px;
@@ -485,6 +614,21 @@ button:hover {
     height: 10vw;
     max-height: 52px;
     min-height: 34px;
+  }
+
+  .slot-item-icon {
+    width: 66%;
+    height: 66%;
+  }
+
+  .quest-complete-notice {
+    top: 22%;
+    min-height: 94px;
+    padding: 22px 20px 18px;
+  }
+
+  .quest-complete-title {
+    font-size: 22px;
   }
 
 }

@@ -9,12 +9,15 @@ GP.Game = function(canvas) {
   this.camera = { x: 0, y: 0 };
   this.enemies = [];
   this.attacks = [];
+  this.impactEffects = [];
   this.particles = [];
   this.coins = [];
   this.texts = [];
   this.quests = {};
   this.selectedQuestId = null;
   this.selectedHotbarSlot = 0;
+  this.hotbarItems = [{ id: "baseFighting", nome: "Estilo de luta base" }];
+  this.mouse = { x: 0, y: 0, worldX: 0, worldY: 0 };
 
   this.sprites = {
     frente: { sx: 20, sy: 205, sw: 320, sh: 545, dw: 36, dh: 60, offX: -18, offY: -45 },
@@ -29,6 +32,8 @@ GP.Game = function(canvas) {
   document.addEventListener("keyup", e => {
     this.keys[e.key.toLowerCase()] = false;
   });
+  this.canvas.addEventListener("mousemove", e => this.updateMousePosition(e));
+  this.canvas.addEventListener("mousedown", e => this.onMouseDown(e));
   this.setupHotbarControls();
 };
 
@@ -74,12 +79,32 @@ GP.Game.prototype.cycleHotbarSlot = function(direction) {
   this.selectHotbarSlot(this.selectedHotbarSlot + direction);
 };
 
+GP.Game.prototype.updateMousePosition = function(event) {
+  const rect = this.canvas.getBoundingClientRect();
+  const zoom = GP.CONFIG.camera.zoom || 1;
+  this.mouse.x = event.clientX - rect.left;
+  this.mouse.y = event.clientY - rect.top;
+  this.mouse.worldX = this.camera.x + this.mouse.x / zoom;
+  this.mouse.worldY = this.camera.y + this.mouse.y / zoom;
+};
+
+GP.Game.prototype.onMouseDown = function(event) {
+  if (event.button !== 0) return;
+  this.updateMousePosition(event);
+  if (!this.running || document.body.classList.contains("menu-open")) return;
+  if (this.selectedHotbarSlot === 0 && this.hotbarItems[0]) {
+    this.basicPunchAt(this.mouse.worldX, this.mouse.worldY);
+    event.preventDefault();
+  }
+};
+
 GP.Game.prototype.start = function() {
   GP.UI.hideMenu();
   this.player = GP.Entities.createPlayer();
   this.npcs = GP.CONFIG.questNpcs.map(data => GP.Entities.createNpc(data));
   this.enemies = [];
   this.attacks = [];
+  this.impactEffects = [];
   this.particles = [];
   this.coins = [];
   this.texts = [];
@@ -110,7 +135,6 @@ GP.Game.prototype.onKeyDown = function(event) {
 
   if (!this.running) return;
 
-  if (key === "j") this.basicAttack();
   if (key === "e") this.tryInteract();
 };
 
@@ -183,26 +207,43 @@ GP.Game.prototype.getActiveQuestForHud = function() {
   return available || Object.keys(this.quests).map(id => this.quests[id])[0];
 };
 
-GP.Game.prototype.basicAttack = function() {
+GP.Game.prototype.basicPunchAt = function(targetX, targetY) {
   if (this.player.cooldownAtaque > 0) return;
 
+  const dir = GP.Utils.normalize(targetX - this.player.x, targetY - this.player.y);
+  this.player.dirX = dir.x || this.player.dirX || 1;
+  this.player.dirY = dir.y || this.player.dirY || 0;
+  this.player.facing = this.getFacingDirection(this.player.dirX, this.player.dirY);
   this.player.cooldownAtaque = 22;
-  this.player.estado = "attack";
-  this.player.estadoTempo = 18;
-  this.player.actionDuration = 18;
+  this.player.estado = "punch";
+  this.player.estadoTempo = 16;
+  this.player.actionDuration = 16;
 
   this.attacks.push({
-    x: this.player.x + this.player.dirX * 50,
-    y: this.player.y + this.player.dirY * 50,
-    vx: this.player.dirX * 13,
-    vy: this.player.dirY * 13,
-    r: 17,
+    x: this.player.x + this.player.dirX * 42,
+    y: this.player.y + this.player.dirY * 42,
+    vx: this.player.dirX * 2,
+    vy: this.player.dirY * 2,
+    r: 24,
     dano: this.player.dano,
-    vida: 25,
-    cor: "#ffffff"
+    vida: 7,
+    cor: "#fff7d1",
+    melee: true
   });
 
-  this.createParticles(this.player.x, this.player.y, "#ffffff", 16);
+  this.createPunchImpact(this.player.x + this.player.dirX * 42, this.player.y + this.player.dirY * 42, Math.atan2(this.player.dirY, this.player.dirX));
+};
+
+GP.Game.prototype.createPunchImpact = function(x, y, angle) {
+  this.impactEffects.push({
+    x,
+    y,
+    angle,
+    age: 0,
+    duration: 18,
+    frames: 10,
+    size: 86
+  });
 };
 
 GP.Game.prototype.useSkill = function() {
@@ -428,7 +469,7 @@ GP.Game.prototype.updateAttacks = function() {
     attack.x += attack.vx;
     attack.y += attack.vy;
     attack.vida--;
-    this.createParticles(attack.x, attack.y, attack.cor, 1);
+    if (!attack.melee) this.createParticles(attack.x, attack.y, attack.cor, 1);
 
     if (attack.vida <= 0) {
       this.attacks.splice(i, 1);
@@ -442,13 +483,22 @@ GP.Game.prototype.updateAttacks = function() {
         enemy.vida -= attack.dano;
         this.pushObject(enemy, this.player.x, this.player.y, 22);
         if (attack.gelo) enemy.velocidade *= 0.7;
-        this.createParticles(enemy.x, enemy.y, attack.cor, 20);
+        if (attack.melee) this.createPunchImpact(enemy.x, enemy.y, Math.atan2(enemy.y - this.player.y, enemy.x - this.player.x));
+        else this.createParticles(enemy.x, enemy.y, attack.cor, 20);
         this.createText(enemy.x, enemy.y - 35, "-" + attack.dano, attack.cor);
         this.attacks.splice(i, 1);
         if (enemy.vida <= 0) this.killEnemy(j);
         break;
       }
     }
+  }
+};
+
+GP.Game.prototype.updateImpactEffects = function() {
+  for (let i = this.impactEffects.length - 1; i >= 0; i--) {
+    const effect = this.impactEffects[i];
+    effect.age++;
+    if (effect.age >= effect.duration) this.impactEffects.splice(i, 1);
   }
 };
 
@@ -484,6 +534,7 @@ GP.Game.prototype.completeQuest = function(questId) {
   this.player.xp += config.rewardXp;
   this.createText(this.player.x, this.player.y - 65, "MISSAO COMPLETA!", "#ffe66d");
   this.createParticles(this.player.x, this.player.y, "#ffe66d", 90);
+  GP.UI.showQuestComplete(config.title, "+" + config.rewardCoins + " moedas  +" + config.rewardXp + " XP");
   GP.UI.showToast(config.title + " completa! +" + config.rewardCoins + " moedas e +" + config.rewardXp + " XP");
   this.checkLevelUp();
 };
@@ -624,6 +675,7 @@ GP.Game.prototype.draw = function() {
   this.drawCoins(ctx);
   this.drawDepthSortedScene(ctx);
   this.drawParticles(ctx);
+  this.drawImpactEffects(ctx);
   this.drawTexts(ctx);
   this.drawAttacks(ctx);
   this.drawInteractablePrompt(ctx);
@@ -737,7 +789,8 @@ GP.Game.prototype.drawPlayer = function(ctx) {
   if (this.player.invencivel > 0 && this.frame % 8 < 4) ctx.globalAlpha = 0.48;
   this.drawPlayerShadow(ctx, pose);
   if (this.player.estado === "skill") this.drawSkillWindup(ctx, pose);
-  this.drawPlayerSprite(ctx, pose);
+  if (this.player.estado === "punch" && GP.Assets.cleanPunchSheet) this.drawPunchSprite(ctx, pose);
+  else this.drawPlayerSprite(ctx, pose);
   if (this.player.estado === "attack") this.drawAttackArc(ctx, pose);
   ctx.restore();
 
@@ -761,7 +814,7 @@ GP.Game.prototype.getPlayerPose = function() {
     flip = facing === "right";
   }
 
-  if ((player.estado === "skill" || player.estado === "attack") && (facing === "left" || facing === "right")) {
+  if ((player.estado === "skill" || player.estado === "attack" || player.estado === "punch") && (facing === "left" || facing === "right")) {
     sprite = this.sprites.skill;
     flip = facing === "right";
   }
@@ -770,7 +823,7 @@ GP.Game.prototype.getPlayerPose = function() {
   const actionDuration = player.actionDuration || 1;
   const actionProgress = player.estadoTempo > 0 ? 1 - player.estadoTempo / actionDuration : 1;
   const casting = player.estado === "skill" && player.estadoTempo > 0;
-  const attacking = player.estado === "attack" && player.estadoTempo > 0;
+  const attacking = (player.estado === "attack" || player.estado === "punch") && player.estadoTempo > 0;
 
   let bob = walkCycle * 5;
   let sway = walkCycle * 2.5;
@@ -788,8 +841,9 @@ GP.Game.prototype.getPlayerPose = function() {
 
   if (attacking) {
     const slash = Math.sin(actionProgress * Math.PI);
-    sway += (facing === "left" ? -1 : 1) * slash * 8;
-    rotation = (facing === "left" ? -1 : 1) * slash * 0.08;
+    const side = facing === "left" ? -1 : 1;
+    sway += side * slash * 8;
+    rotation = side * slash * 0.08;
   }
 
   return {
@@ -827,6 +881,23 @@ GP.Game.prototype.drawPlayerSprite = function(ctx, pose) {
   } else {
     ctx.drawImage(sheet, sprite.sx, sprite.sy, sprite.sw, sprite.sh, sprite.offX, sprite.offY, sprite.dw, sprite.dh);
   }
+  ctx.restore();
+};
+
+GP.Game.prototype.drawPunchSprite = function(ctx, pose) {
+  const frontPunch = this.player.facing === "down" && GP.Assets.cleanPunchFrontSheet;
+  const sheet = frontPunch ? GP.Assets.cleanPunchFrontSheet : GP.Assets.cleanPunchSheet;
+  const actionProgress = Math.max(0, Math.min(0.999, pose.actionProgress || 0));
+  const frame = Math.floor(actionProgress * 4);
+  const frameW = Math.floor(sheet.width / 4);
+  const frameH = sheet.height;
+  const flip = !frontPunch && this.player.dirX < 0;
+
+  ctx.save();
+  ctx.translate(this.player.x, this.player.y);
+  ctx.rotate(frontPunch ? 0 : (this.player.dirY || 0) * 0.07);
+  ctx.scale(flip ? -1 : 1, 1);
+  ctx.drawImage(sheet, frame * frameW, 0, frameW, frameH, frontPunch ? -31 : -30, frontPunch ? -59 : -58, frontPunch ? 62 : 62, 72);
   ctx.restore();
 };
 
@@ -878,7 +949,7 @@ GP.Game.prototype.drawSkillWindup = function(ctx, pose) {
 
 GP.Game.prototype.drawAttackArc = function(ctx, pose) {
   const p = this.player;
-  const dir = this.getDirectionVector(pose.facing);
+  const dir = p.estado === "punch" ? GP.Utils.normalize(p.dirX, p.dirY) : this.getDirectionVector(pose.facing);
   const angle = Math.atan2(dir.y, dir.x);
   const progress = pose.actionProgress;
 
@@ -942,6 +1013,7 @@ GP.Game.prototype.drawEnemy = function(ctx, enemy) {
 
 GP.Game.prototype.drawAttacks = function(ctx) {
   for (const attack of this.attacks) {
+    if (attack.melee) continue;
     ctx.save();
     ctx.shadowColor = attack.cor;
     ctx.shadowBlur = 18;
@@ -953,6 +1025,26 @@ GP.Game.prototype.drawAttacks = function(ctx) {
       ctx.arc(attack.x, attack.y, attack.r, 0, Math.PI * 2);
       ctx.fill();
     }
+    ctx.restore();
+  }
+};
+
+GP.Game.prototype.drawImpactEffects = function(ctx) {
+  const sheet = GP.Assets.cleanPunchImpactSheet;
+  if (!sheet) return;
+
+  for (const effect of this.impactEffects) {
+    const progress = Math.max(0, Math.min(0.999, effect.age / effect.duration));
+    const frame = Math.min(effect.frames - 1, Math.floor(progress * effect.frames));
+    const frameW = Math.floor(sheet.width / effect.frames);
+    const frameH = sheet.height;
+    const size = effect.size * (0.86 + progress * 0.2);
+
+    ctx.save();
+    ctx.translate(effect.x, effect.y - 12);
+    ctx.rotate(effect.angle);
+    ctx.globalAlpha = 1 - Math.max(0, progress - 0.62) / 0.38;
+    ctx.drawImage(sheet, frame * frameW, 0, frameW, frameH, -size / 2, -size / 2, size, size);
     ctx.restore();
   }
 };
@@ -1021,6 +1113,7 @@ GP.Game.prototype.loop = function() {
   this.updateAttacks();
   this.updateCoins();
   this.updateParticles();
+  this.updateImpactEffects();
   this.updateTexts();
   this.updateCooldowns();
   this.updateCamera();
