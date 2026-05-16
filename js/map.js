@@ -4,126 +4,505 @@ GP.GameMap = {
   world: GP.CONFIG.world,
   utils: GP.Utils,
   baseCache: null,
+  blocks: null,
+  backgroundBlocks: null,
+  customMap: null,
+  customMapKey: "gabrielPieceCustomMapV1",
+  currentInterior: null,
+  interiorBlocks: null,
+  interiorBackgroundBlocks: null,
+  interiorExit: { col: 6, row: 10 },
+  interiorRightExit: { col: 25, row: 10 },
+  interiorNpcMarker: { col: 17, row: 12 },
+  interiorShopMarker: { col: 9, row: 11 },
+  shanksHouseDoor: { col: 77, row: 10 },
+  shanksHouseRightDoor: { col: 85, row: 10 },
 
-  landShapes: [
-    { x: 1600, y: 1560, rx: 1400, ry: 1280 }
-  ],
+  blockSize: GP.CONFIG.world.blockSize || 48,
+  blockCells: {
+    grass: { atlas: "terrainBlockAtlas", cell: [0, 0], cols: 2, rows: 2 },
+    dirt: { atlas: "terrainBlockAtlas", cell: [1, 0], cols: 2, rows: 2 },
+    stone: { atlas: "terrainBlockAtlas", cell: [0, 1], cols: 2, rows: 2 },
+    sand: { atlas: "terrainBlockAtlas", cell: [1, 1], cols: 2, rows: 2 },
+    wood: { atlas: "constructionBlockAtlas", cell: [0, 0], cols: 3, rows: 2 },
+    plank: { atlas: "constructionBlockAtlas", cell: [1, 0], cols: 3, rows: 2 },
+    roof: { atlas: "constructionBlockAtlas", cell: [2, 0], cols: 3, rows: 2 },
+    brick: { atlas: "constructionBlockAtlas", cell: [0, 1], cols: 3, rows: 2 },
+    water: { atlas: "constructionBlockAtlas", cell: [1, 1], cols: 3, rows: 2 },
+    leaves: { atlas: "constructionBlockAtlas", cell: [2, 1], cols: 3, rows: 2 },
+    palmWood: { atlas: "extraBlockAtlas", cell: [0, 0], cols: 4, rows: 2 },
+    palmLeaves: { atlas: "extraBlockAtlas", cell: [1, 0], cols: 4, rows: 2 },
+    darkStone: { atlas: "extraBlockAtlas", cell: [2, 0], cols: 4, rows: 2 },
+    ironOre: { atlas: "extraBlockAtlas", cell: [3, 0], cols: 4, rows: 2 },
+    goldOre: { atlas: "extraBlockAtlas", cell: [0, 1], cols: 4, rows: 2 },
+    plaster: { atlas: "extraBlockAtlas", cell: [1, 1], cols: 4, rows: 2 },
+    ropeNet: { atlas: "extraBlockAtlas", cell: [2, 1], cols: 4, rows: 2 },
+    coral: { atlas: "extraBlockAtlas", cell: [3, 1], cols: 4, rows: 2 },
+    doorClosedTop: { atlas: "doorBlockAtlas", cell: [0, 0], cols: 2, rows: 2 },
+    doorClosedBottom: { atlas: "doorBlockAtlas", cell: [0, 1], cols: 2, rows: 2 },
+    doorOpenTop: { atlas: "doorBlockAtlas", cell: [1, 0], cols: 2, rows: 2 },
+    doorOpenBottom: { atlas: "doorBlockAtlas", cell: [1, 1], cols: 2, rows: 2 }
+  },
 
-  waterCuts: [],
-
-  docks: [
-    { x: 1320, y: 2040, w: 560, h: 430 },
-    { x: 1552, y: 1920, w: 96, h: 600 }
-  ],
-
-  enemyZones: [
-    { name: "west-flat-field", x: 500, y: 1220, w: 560, h: 620 },
-    { name: "north-training-yard", x: 1190, y: 760, w: 800, h: 420 },
-    { name: "east-flat-field", x: 2180, y: 1160, w: 570, h: 670 },
-    { name: "south-camp-line", x: 820, y: 2150, w: 1620, h: 430 }
-  ],
+  props: [],
 
   groundProps: [],
 
-  props: [
-    { id: "central-inn", prop: "inn", x: 1600, y: 1428, w: 330, h: 255, sortY: 1524, collision: [{ type: "rect", x: 1504, y: 1510, w: 192, h: 46 }] },
-    { id: "blue-house-west", prop: "blueHouse", x: 1210, y: 1510, w: 250, h: 216, sortY: 1598, collision: [{ type: "rect", x: 1138, y: 1582, w: 144, h: 42 }] },
-    { id: "red-house-east", prop: "redHouse", x: 1995, y: 1512, w: 250, h: 216, sortY: 1600, collision: [{ type: "rect", x: 1923, y: 1584, w: 144, h: 42 }] },
-    { id: "west-cottage", prop: "redHouse", x: 890, y: 1785, w: 238, h: 206, sortY: 1868, collision: [{ type: "rect", x: 822, y: 1852, w: 136, h: 40 }] },
-    { id: "east-guild-house", prop: "blueHouse", x: 2330, y: 1788, w: 260, h: 224, sortY: 1880, collision: [{ type: "rect", x: 2255, y: 1862, w: 150, h: 42 }] },
-    { id: "west-windmill", prop: "windmill", x: 610, y: 1340, w: 300, h: 300, sortY: 1450, collision: { type: "circle", x: 610, y: 1440, r: 34 } },
-    { id: "east-windmill", prop: "windmill", x: 2590, y: 1340, w: 300, h: 300, sortY: 1450, collision: { type: "circle", x: 2590, y: 1440, r: 34 } },
-    { id: "north-watchtower", prop: "watchtower", x: 1600, y: 710, w: 270, h: 316, sortY: 832, collision: [{ type: "rect", x: 1564, y: 818, w: 72, h: 34 }] },
-    { id: "west-lighthouse", prop: "lighthouse", x: 430, y: 1950, w: 230, h: 276, sortY: 2056, collision: { type: "circle", x: 430, y: 2048, r: 34 } },
-    { id: "southwest-camp", prop: "tent", x: 850, y: 2320, w: 310, h: 238, sortY: 2414, collision: [{ type: "rect", x: 780, y: 2398, w: 140, h: 32 }] },
-    { id: "southeast-camp", prop: "tent", x: 2380, y: 2320, w: 310, h: 238, sortY: 2414, collision: [{ type: "rect", x: 2310, y: 2398, w: 140, h: 32 }] },
-    { id: "barrels-market", prop: "trees", x: 1825, y: 1730, w: 118, h: 92, sortY: 1768, collision: [{ type: "rect", x: 1782, y: 1755, w: 86, h: 28 }] }
-  ],
+  interactables: [],
 
-  interactables: [
-    { id: "harbor-boat", prop: "boat", label: "Barco", x: 1248, y: 2362, w: 270, h: 186, sortY: 2428, r: 56, used: false, collision: [{ type: "rect", x: 1178, y: 2397, w: 140, h: 32 }], message: "O barco novo esta pronto no porto plano. Mais tarde ele leva para novas ilhas." },
-    { id: "dock-crates", prop: "crates", label: "Caixas", x: 1438, y: 2112, w: 142, h: 104, sortY: 2154, r: 50, used: false, reward: 10, collision: [{ type: "rect", x: 1392, y: 2140, w: 92, h: 26 }], message: "Voce encontrou moedas nas caixas 3D do porto." },
-    { id: "village-chest", prop: "chest", label: "Bau", x: 1878, y: 1710, w: 112, h: 88, sortY: 1750, r: 56, used: false, reward: 40, collision: [{ type: "rect", x: 1838, y: 1732, w: 80, h: 30 }], message: "Bau aberto! Voce pegou moedas de aventureiro." },
-    { id: "tower-chest", prop: "chest", label: "Bau raro", x: 1748, y: 825, w: 112, h: 88, sortY: 865, r: 60, used: false, reward: 90, collision: [{ type: "rect", x: 1708, y: 847, w: 80, h: 30 }], message: "Um bau raro perto da torre. Voce achou uma recompensa escondida." }
-  ],
-
-  natureProps: [
-    { id: "palm-harbor-left", nature: "palm", x: 1090, y: 2180, w: 166, h: 200, sortY: 2274, collision: { type: "circle", x: 1090, y: 2275, r: 17 } },
-    { id: "palm-harbor-right", nature: "palm", x: 2110, y: 2185, w: 166, h: 200, sortY: 2279, collision: { type: "circle", x: 2110, y: 2280, r: 17 } },
-    { id: "tree-west-village", nature: "leafyTree", x: 1060, y: 1680, w: 196, h: 182, sortY: 1763, collision: { type: "circle", x: 1060, y: 1768, r: 20 } },
-    { id: "tree-east-village", nature: "roundTree", x: 2170, y: 1665, w: 182, h: 166, sortY: 1736, collision: { type: "circle", x: 2170, y: 1745, r: 18 } },
-    { id: "tree-field-edge", nature: "leafyTree", x: 2800, y: 1460, w: 196, h: 182, sortY: 1543, collision: { type: "circle", x: 2800, y: 1548, r: 20 } },
-    { id: "tree-north-path", nature: "pineTree", x: 1310, y: 960, w: 158, h: 210, sortY: 1055, collision: { type: "circle", x: 1310, y: 1060, r: 18 } },
-    { id: "tree-west-shore", nature: "roundTree", x: 600, y: 1520, w: 182, h: 166, sortY: 1591, collision: { type: "circle", x: 600, y: 1600, r: 18 } },
-    { id: "tree-south-1", nature: "leafyTree", x: 1880, y: 2460, w: 196, h: 182, sortY: 2543, collision: { type: "circle", x: 1880, y: 2548, r: 20 } },
-    { id: "flower-plaza-1", nature: "flowerPatch", x: 1430, y: 1670, w: 98, h: 72, sortY: 1700, passable: true },
-    { id: "flower-plaza-2", nature: "flowerPatch", x: 1740, y: 1625, w: 98, h: 72, sortY: 1655, passable: true },
-    { id: "bush-plaza-1", nature: "bush", x: 1845, y: 1575, w: 116, h: 84, sortY: 1612, passable: true },
-    { id: "bush-west-path", nature: "flowerBush", x: 1010, y: 1340, w: 124, h: 88, sortY: 1378, passable: true },
-    { id: "grass-east-field", nature: "tallGrass", x: 2360, y: 1580, w: 118, h: 84, sortY: 1618, passable: true },
-    { id: "grass-west-camp", nature: "tallGrass", x: 745, y: 2140, w: 118, h: 84, sortY: 2178, passable: true }
-  ],
-
-  isInShapes(x, y, shapes) {
-    return shapes.some(shape => this.utils.pointInEllipse(x, y, shape.x, shape.y, shape.rx, shape.ry));
+  invalidateCache() {
+    this.baseCache = null;
   },
 
-  isLand(x, y) {
-    return this.isInShapes(x, y, this.landShapes) && !this.isInShapes(x, y, this.waterCuts);
+  getActiveBlocks() {
+    if (this.currentInterior === "shanksHouse") {
+      this.ensureInteriorBlocks();
+      return this.interiorBlocks;
+    }
+    this.ensureBlocks();
+    return this.blocks;
   },
 
-  isDock(x, y) {
-    return this.docks.some(rect => this.utils.pointInRect(x, y, rect));
+  enterInterior(id) {
+    this.currentInterior = id;
+    this.invalidateCache();
   },
 
-  isWalkableSurface(x, y) {
-    return this.isLand(x, y) || this.isDock(x, y);
+  exitInterior() {
+    this.currentInterior = null;
+    this.invalidateCache();
+  },
+
+  ensureInteriorBlocks() {
+    if (this.interiorBlocks) return;
+    const cols = Math.ceil(this.world.width / this.blockSize);
+    const rows = Math.ceil(this.world.height / this.blockSize);
+    this.interiorBlocks = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
+    this.interiorBackgroundBlocks = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
+
+    const left = 5;
+    const right = 25;
+    const top = 5;
+    const floor = 13;
+    for (let col = left; col <= right; col++) {
+      this.interiorBlocks[floor][col] = "darkStone";
+      this.interiorBlocks[top][col] = "palmWood";
+      for (let row = top + 1; row < floor; row++) {
+        this.interiorBackgroundBlocks[row][col] = "plank";
+      }
+    }
+    for (let row = top; row <= floor; row++) {
+      this.interiorBlocks[row][left] = "darkStone";
+      this.interiorBlocks[row][right] = "darkStone";
+    }
+
+    this.interiorBlocks[10][left] = "doorClosedTop";
+    this.interiorBlocks[11][left] = "doorClosedBottom";
+    this.interiorBlocks[10][right] = "doorClosedTop";
+    this.interiorBlocks[11][right] = "doorClosedBottom";
+    this.interiorBlocks[12][8] = "brick";
+    this.interiorBlocks[12][9] = "brick";
+    this.interiorBlocks[12][18] = "wood";
+    this.interiorBlocks[12][19] = "wood";
+  },
+
+  ensureBlocks() {
+    if (this.blocks) return;
+
+    const cols = Math.ceil(this.world.width / this.blockSize);
+    const rows = Math.ceil(this.world.height / this.blockSize);
+    const seaRow = Math.floor((this.world.groundY || 624) / this.blockSize);
+    const leftWaterEnd = 8;
+    const leftBeachEnd = 20;
+    const rightBeachStart = cols - 21;
+    const rightWaterStart = cols - 9;
+
+    this.blocks = Array.from({ length: rows }, () => Array.from({ length: cols }, () => null));
+
+    for (let col = 0; col < cols; col++) {
+      const center = Math.abs(col - cols / 2) / (cols / 2);
+      const hill = center < 0.46 ? Math.round(Math.sin(col * 0.18) * 0.7 + Math.sin(col * 0.05) * 0.9) : 0;
+      const surfaceRow = (col <= leftBeachEnd || col >= rightBeachStart) ? seaRow : seaRow - 1 - hill;
+      const isWater = col < leftWaterEnd || col >= rightWaterStart;
+      const isBeach = !isWater && (col <= leftBeachEnd || col >= rightBeachStart);
+
+      for (let row = 0; row < rows; row++) {
+        if (isWater) {
+          if (row >= seaRow) this.blocks[row][col] = "water";
+          continue;
+        }
+
+        if (row < surfaceRow) continue;
+        if (isBeach) {
+          this.blocks[row][col] = row <= surfaceRow + 2 ? "sand" : "stone";
+        } else if (row === surfaceRow) {
+          this.blocks[row][col] = "grass";
+        } else if (row < surfaceRow + 4) {
+          this.blocks[row][col] = "dirt";
+        } else {
+          this.blocks[row][col] = row % 5 === 0 && col % 7 < 3 ? "stone" : "dirt";
+        }
+      }
+    }
+
+    this.createBackgroundScenery();
+    this.loadCustomMap();
+    this.applyCustomMap();
+  },
+
+  createBackgroundScenery() {
+    this.backgroundBlocks = [];
+
+    [520, 1120, 1880, 2620, 3420, 4300, 4860].forEach((x, index) => {
+      this.addTreeBlocks(x, 4 + (index % 2), index % 3);
+    });
+  },
+
+  addTreeBlocks(x, trunkHeight, variant) {
+    const col = Math.floor(x / this.blockSize);
+    const groundRow = Math.floor(this.getGroundY(x) / this.blockSize);
+    const put = (c, r, type) => this.backgroundBlocks.push({ col: c, row: r, type });
+
+    for (let i = 1; i <= trunkHeight; i++) {
+      const lean = i > 2 && variant === 1 ? -1 : i > 3 && variant === 2 ? 1 : 0;
+      put(col + lean, groundRow - i, "palmWood");
+    }
+
+    const topCol = col + (variant === 1 ? -1 : variant === 2 ? 1 : 0);
+    const topRow = groundRow - trunkHeight - 1;
+    const canopy = [
+      [0, 0], [-1, 0], [1, 0],
+      [-2, 1], [-1, 1], [0, 1], [1, 1], [2, 1],
+      [-2, 2], [-1, 2], [1, 2], [2, 2],
+      [-1, -1], [0, -1], [1, -1]
+    ];
+
+    canopy.forEach(([dx, dy]) => put(topCol + dx, topRow + dy, "palmLeaves"));
+  },
+
+  worldToCol(x) {
+    const blocks = this.getActiveBlocks();
+    const cols = blocks[0].length;
+    return Math.max(0, Math.min(cols - 1, Math.floor(x / this.blockSize)));
+  },
+
+  getBlock(col, row) {
+    const blocks = this.getActiveBlocks();
+    if (row < 0 || row >= blocks.length || col < 0 || col >= blocks[0].length) return null;
+    return blocks[row][col];
+  },
+
+  inBounds(col, row) {
+    const blocks = this.getActiveBlocks();
+    return row >= 0 && row < blocks.length && col >= 0 && col < blocks[0].length;
+  },
+
+  setBlock(col, row, type) {
+    this.ensureBlocks();
+    if (!this.inBounds(col, row)) return false;
+    this.blocks[row][col] = type || null;
+    this.invalidateCache();
+    return true;
+  },
+
+  isDoorBlock(type) {
+    return type === "doorClosedTop" || type === "doorClosedBottom" || type === "doorOpenTop" || type === "doorOpenBottom";
+  },
+
+  isOpenDoorBlock(type) {
+    return type === "doorOpenTop" || type === "doorOpenBottom";
+  },
+
+  getDoorTopRow(col, row) {
+    const type = this.getBlock(col, row);
+    if (type === "doorClosedBottom" || type === "doorOpenBottom") return row - 1;
+    if (type === "doorClosedTop" || type === "doorOpenTop") return row;
+    return null;
+  },
+
+  isSolidBlock(type) {
+    return !!type && type !== "water" && !this.isOpenDoorBlock(type);
+  },
+
+  isPassableInInterior(type) {
+    const passableTypes = ["palmWood", "palmLeaves", "brick", "plank", "wood", "leaves", "plaster", "ropeNet", "coral"];
+    return passableTypes.includes(type);
+  },
+
+  isSolidBlockForCollision(type) {
+    if (this.currentInterior && this.isPassableInInterior(type)) {
+      return false;
+    }
+    return this.isSolidBlock(type);
+  },
+
+  isDrawableBlock(type) {
+    return !!type;
+  },
+
+  isWaterBlock(type) {
+    return type === "water";
+  },
+
+  getSurfaceBlock(x) {
+    const blocks = this.getActiveBlocks();
+    const col = this.worldToCol(x);
+    for (let row = 0; row < blocks.length; row++) {
+      if (blocks[row][col]) return blocks[row][col];
+    }
+    return null;
+  },
+
+  mapKey(col, row) {
+    return col + "," + row;
+  },
+
+  parseMapKey(key) {
+    const parts = String(key).split(",");
+    return { col: Number(parts[0]), row: Number(parts[1]) };
+  },
+
+  createEmptyCustomMap() {
+    return {
+      version: 1,
+      foreground: {},
+      background: {},
+      invisible: {},
+      markers: {}
+    };
+  },
+
+  ensureCustomMap() {
+    if (!this.customMap) this.customMap = this.createEmptyCustomMap();
+    this.customMap.foreground = this.customMap.foreground || {};
+    this.customMap.background = this.customMap.background || {};
+    this.customMap.invisible = this.customMap.invisible || {};
+    this.customMap.markers = this.customMap.markers || {};
+    return this.customMap;
+  },
+
+  loadCustomMap() {
+    if (this.customMap) return this.ensureCustomMap();
+    let data = null;
+
+    if (window.GP && GP.CUSTOM_MAP_DATA) data = GP.CUSTOM_MAP_DATA;
+    if (typeof localStorage !== "undefined") {
+      try {
+        const raw = localStorage.getItem(this.customMapKey);
+        if (raw) data = JSON.parse(raw);
+      } catch (error) {}
+    }
+
+    this.customMap = Object.assign(this.createEmptyCustomMap(), data || {});
+    return this.ensureCustomMap();
+  },
+
+  saveCustomMap() {
+    const data = this.ensureCustomMap();
+    if (typeof localStorage === "undefined") return false;
+    try {
+      localStorage.setItem(this.customMapKey, JSON.stringify(data));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  },
+
+  clearCustomMap() {
+    this.customMap = this.createEmptyCustomMap();
+    if (typeof localStorage !== "undefined") {
+      try {
+        localStorage.removeItem(this.customMapKey);
+      } catch (error) {}
+    }
+    this.blocks = null;
+    this.invalidateCache();
+  },
+
+  applyCustomMap() {
+    const data = this.ensureCustomMap();
+    Object.keys(data.foreground).forEach(key => {
+      const pos = this.parseMapKey(key);
+      if (!this.inBounds(pos.col, pos.row)) return;
+      this.blocks[pos.row][pos.col] = data.foreground[key] || null;
+    });
+  },
+
+  setEditorBlock(col, row, type, layer, tool) {
+    this.ensureBlocks();
+    const data = this.ensureCustomMap();
+    if (!this.inBounds(col, row)) return false;
+    const key = this.mapKey(col, row);
+    const selectedLayer = layer || "solid";
+    const selectedTool = tool || "paint";
+
+    if (type === "door" && selectedLayer !== "npcMarker" && selectedLayer !== "imageMarker") {
+      return this.setEditorDoor(col, row, selectedTool);
+    }
+
+    if (selectedTool === "erase") {
+      const doorTop = this.getDoorTopRow(col, row);
+      if (doorTop !== null) return this.setEditorDoor(col, doorTop, "erase");
+      if (selectedLayer === "background") {
+        delete data.background[key];
+      } else if (selectedLayer === "invisible") {
+        delete data.invisible[key];
+      } else if (selectedLayer === "npcMarker" || selectedLayer === "imageMarker") {
+        delete data.markers[key];
+      } else {
+        this.blocks[row][col] = null;
+        data.foreground[key] = null;
+      }
+      this.invalidateCache();
+      return true;
+    }
+
+    if (selectedLayer === "background") {
+      data.background[key] = type;
+    } else if (selectedLayer === "invisible") {
+      data.invisible[key] = true;
+    } else if (selectedLayer === "npcMarker" || selectedLayer === "imageMarker") {
+      data.markers[key] = {
+        type: selectedLayer === "npcMarker" ? "npc" : "image",
+        block: type || "marker",
+        x: col * this.blockSize + this.blockSize / 2,
+        y: row * this.blockSize + this.blockSize / 2
+      };
+    } else {
+      this.blocks[row][col] = type;
+      data.foreground[key] = type;
+    }
+
+    this.invalidateCache();
+    return true;
+  },
+
+  setEditorDoor(col, row, tool) {
+    this.ensureBlocks();
+    const data = this.ensureCustomMap();
+    if (!this.inBounds(col, row) || !this.inBounds(col, row + 1)) return false;
+    const topKey = this.mapKey(col, row);
+    const bottomKey = this.mapKey(col, row + 1);
+
+    if (tool === "erase") {
+      this.blocks[row][col] = null;
+      this.blocks[row + 1][col] = null;
+      data.foreground[topKey] = null;
+      data.foreground[bottomKey] = null;
+      this.invalidateCache();
+      return true;
+    }
+
+    this.blocks[row][col] = "doorClosedTop";
+    this.blocks[row + 1][col] = "doorClosedBottom";
+    data.foreground[topKey] = "doorClosedTop";
+    data.foreground[bottomKey] = "doorClosedBottom";
+    this.invalidateCache();
+    return true;
+  },
+
+  toggleDoorAt(col, row) {
+    const blocks = this.getActiveBlocks();
+    const topRow = this.getDoorTopRow(col, row);
+    if (topRow === null || !this.inBounds(col, topRow + 1)) return false;
+    const top = blocks[topRow][col];
+    const open = top === "doorOpenTop";
+    const nextTop = open ? "doorClosedTop" : "doorOpenTop";
+    const nextBottom = open ? "doorClosedBottom" : "doorOpenBottom";
+    blocks[topRow][col] = nextTop;
+    blocks[topRow + 1][col] = nextBottom;
+    if (!this.currentInterior) {
+      const data = this.ensureCustomMap();
+      data.foreground[this.mapKey(col, topRow)] = nextTop;
+      data.foreground[this.mapKey(col, topRow + 1)] = nextBottom;
+    }
+    this.invalidateCache();
+    return true;
+  },
+
+  toggleDoorNear(x, y, maxDistance = 82) {
+    const blocks = this.getActiveBlocks();
+    const centerCol = this.worldToCol(x);
+    const centerRow = Math.max(0, Math.min(blocks.length - 1, Math.floor(y / this.blockSize)));
+    const range = Math.ceil(maxDistance / this.blockSize);
+
+    for (let row = centerRow - range; row <= centerRow + range; row++) {
+      for (let col = centerCol - range; col <= centerCol + range; col++) {
+        if (!this.inBounds(col, row) || !this.isDoorBlock(blocks[row][col])) continue;
+        const doorX = col * this.blockSize + this.blockSize / 2;
+        const doorY = (this.getDoorTopRow(col, row) || row) * this.blockSize + this.blockSize;
+        if (this.utils.dist(x, y, doorX, doorY) <= maxDistance) return this.toggleDoorAt(col, row);
+      }
+    }
+    return false;
+  },
+
+  hasInvisibleBlock(col, row) {
+    const data = this.loadCustomMap();
+    return !!(data.invisible && data.invisible[this.mapKey(col, row)]);
+  },
+
+  hasSolidAtWorld(x, y) {
+    const blocks = this.getActiveBlocks();
+    const col = Math.floor(x / this.blockSize);
+    const row = Math.floor(y / this.blockSize);
+    if (!this.inBounds(col, row)) return true;
+    return this.isSolidBlockForCollision(blocks[row][col]) || (!this.currentInterior && this.hasInvisibleBlock(col, row));
+  },
+
+  actorOverlapsSolid(x, footY, radius, height) {
+    const left = x - radius;
+    const right = x + radius;
+    const shoulderY = footY - Math.min(height * 0.55, this.blockSize * 0.95);
+    const footSampleY = footY - 12;
+    const sampleYs = [shoulderY, footSampleY];
+    for (const sy of sampleYs) {
+      if (this.hasSolidAtWorld(left, sy) || this.hasSolidAtWorld(right, sy)) return true;
+    }
+    return false;
+  },
+
+  exportCustomMapCode() {
+    return "window.GP = window.GP || {};\nGP.CUSTOM_MAP_DATA = " + JSON.stringify(this.ensureCustomMap(), null, 2) + ";\n";
+  },
+
+  resetInteractables() {
+    this.interactables.forEach(item => {
+      item.used = false;
+    });
   },
 
   allProps() {
-    return this.groundProps.concat(this.props, this.natureProps, this.interactables);
+    return this.groundProps.concat(this.props, this.interactables);
   },
 
-  hitsBlocker(x, y, r) {
-    for (const prop of this.allProps()) {
-      if (prop.passable) continue;
-      if (prop.collision && this.hitsCollision(x, y, r, prop.collision)) return true;
+  getGroundY(x) {
+    const blocks = this.getActiveBlocks();
+    const col = this.worldToCol(x);
+    for (let row = 0; row < blocks.length; row++) {
+      if (this.isSolidBlockForCollision(blocks[row][col]) || (!this.currentInterior && this.hasInvisibleBlock(col, row))) return row * this.blockSize;
     }
-    return false;
+    return this.world.height;
   },
 
-  hitsCollision(x, y, r, collision) {
-    if (Array.isArray(collision)) return collision.some(part => this.hitsCollision(x, y, r, part));
-    if (collision.type === "circle") return this.utils.dist(x, y, collision.x, collision.y) < r + collision.r;
-    if (collision.type === "rect") return this.utils.circleRectCollision(x, y, r, collision);
-    return false;
+  getGroundYBelow(x, footY) {
+    const blocks = this.getActiveBlocks();
+    const col = this.worldToCol(x);
+    const startRow = Math.max(0, Math.min(blocks.length - 1, Math.floor(footY / this.blockSize)));
+    for (let row = startRow; row < blocks.length; row++) {
+      if (this.isSolidBlockForCollision(blocks[row][col]) || (!this.currentInterior && this.hasInvisibleBlock(col, row))) return row * this.blockSize;
+    }
+    return this.world.height;
   },
 
   canWalk(x, y, r) {
-    if (x - r < 0 || y - r < 0 || x + r > this.world.width || y + r > this.world.height) return false;
-
-    const samples = [
-      [x, y],
-      [x - r * 0.76, y],
-      [x + r * 0.76, y],
-      [x, y - r * 0.5],
-      [x, y + r * 0.86]
-    ];
-
-    for (const sample of samples) {
-      if (!this.isWalkableSurface(sample[0], sample[1])) return false;
-    }
-    return !this.hitsBlocker(x, y, r);
+    if (x - r < 0 || x + r > this.world.width || y > this.world.height) return false;
+    return !this.isWaterBlock(this.getSurfaceBlock(x));
   },
 
   randomEnemyPoint() {
-    for (let i = 0; i < 500; i++) {
-      const zone = this.enemyZones[Math.floor(Math.random() * this.enemyZones.length)];
-      const x = zone.x + Math.random() * zone.w;
-      const y = zone.y + Math.random() * zone.h;
-      if (this.canWalk(x, y, 17)) return { x, y };
-    }
-    return { x: 760, y: 1900 };
+    const x = 1100 + Math.random() * 3300;
+    return { x, y: this.getGroundY(x) };
   },
 
   getNearbyInteractable(x, y) {
@@ -141,201 +520,172 @@ GP.GameMap = {
     return item.message + (item.reward ? " +" + item.reward + " moedas." : "");
   },
 
-  resetInteractables() {
-    this.interactables.forEach(item => {
-      item.used = false;
-    });
-  },
-
-  invalidateCache() {
-    this.baseCache = null;
-  },
-
   drawBase(ctx, camera, canvas, zoom = 1) {
-    const oldSmoothing = ctx.imageSmoothingEnabled;
     const base = this.getBaseCache();
-
+    const viewW = canvas.width / zoom;
+    const viewH = canvas.height / zoom;
+    const sx = Math.max(0, Math.floor(camera.x));
+    const sy = Math.max(0, Math.floor(camera.y));
+    const sw = Math.min(viewW, this.world.width - sx);
+    const sh = Math.min(viewH, this.world.height - sy);
+    ctx.save();
     ctx.imageSmoothingEnabled = true;
-    ctx.fillStyle = "#075c85";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    if (base) {
-      const viewW = canvas.width / zoom;
-      const viewH = canvas.height / zoom;
-      const sx = Math.max(0, Math.floor(camera.x));
-      const sy = Math.max(0, Math.floor(camera.y));
-      const sw = Math.min(viewW, this.world.width - sx);
-      const sh = Math.min(viewH, this.world.height - sy);
-      ctx.drawImage(base, sx, sy, sw, sh, 0, 0, sw * zoom, sh * zoom);
-    }
-
-    ctx.imageSmoothingEnabled = oldSmoothing;
+    ctx.drawImage(base, sx, sy, sw, sh, 0, 0, sw * zoom, sh * zoom);
+    ctx.restore();
   },
 
   getBaseCache() {
     if (this.baseCache) return this.baseCache;
-
+    this.ensureBlocks();
     const canvas = document.createElement("canvas");
     canvas.width = this.world.width;
     canvas.height = this.world.height;
     this.drawBaseCache(canvas.getContext("2d"));
     this.baseCache = canvas;
-    return this.baseCache;
+    return canvas;
   },
 
   drawBaseCache(ctx) {
-    const terrain = GP.Assets.terrain || {};
-    const pattern = (name, fallback) => {
-      if (!terrain[name]) return fallback;
-      return ctx.createPattern(terrain[name], "repeat") || fallback;
-    };
-    const ellipse = (x, y, rx, ry, fill, alpha) => {
-      ctx.save();
-      ctx.globalAlpha = alpha === undefined ? 1 : alpha;
-      ctx.fillStyle = fill;
-      ctx.beginPath();
-      ctx.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-    };
-    const pathStroke = (points, width, fill, alpha) => {
-      ctx.save();
-      ctx.globalAlpha = alpha === undefined ? 1 : alpha;
-      ctx.strokeStyle = fill;
-      ctx.lineWidth = width;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-      ctx.beginPath();
-      points.forEach((point, index) => {
-        if (index === 0) ctx.moveTo(point[0], point[1]);
-        else ctx.lineTo(point[0], point[1]);
-      });
-      ctx.stroke();
-      ctx.restore();
-    };
-    const rect = (x, y, w, h, fill, alpha) => {
-      ctx.save();
-      ctx.globalAlpha = alpha === undefined ? 1 : alpha;
-      ctx.fillStyle = fill;
-      ctx.fillRect(x, y, w, h);
-      ctx.restore();
-    };
-    const rand = seed => {
-      const value = Math.sin(seed * 9283.137) * 43758.5453;
-      return value - Math.floor(value);
-    };
-    const scatterAlongPath = (points, count, width, colorA, colorB, seedOffset) => {
-      for (let i = 0; i < count; i++) {
-        const segment = Math.floor(rand(seedOffset + i * 2.31) * (points.length - 1));
-        const a = points[segment];
-        const b = points[segment + 1];
-        const t = rand(seedOffset + i * 3.17);
-        const side = rand(seedOffset + i * 5.71) > 0.5 ? 1 : -1;
-        const dx = b[0] - a[0];
-        const dy = b[1] - a[1];
-        const length = Math.hypot(dx, dy) || 1;
-        const nx = -dy / length;
-        const ny = dx / length;
-        const distance = width * (0.36 + rand(seedOffset + i * 7.43) * 0.24) * side;
-        const x = a[0] + dx * t + nx * distance;
-        const y = a[1] + dy * t + ny * distance;
-        const rx = 10 + rand(seedOffset + i * 11.13) * 18;
-        const ry = 4 + rand(seedOffset + i * 13.91) * 9;
-        ellipse(x, y, rx, ry, rand(seedOffset + i * 17.37) > 0.35 ? colorA : colorB, 0.48);
-      }
-    };
-    const grassTufts = (cx, cy, rx, ry, count, seedOffset) => {
-      for (let i = 0; i < count; i++) {
-        const angle = rand(seedOffset + i * 2.9) * Math.PI * 2;
-        const radius = 0.78 + rand(seedOffset + i * 4.1) * 0.22;
-        const x = cx + Math.cos(angle) * rx * radius;
-        const y = cy + Math.sin(angle) * ry * radius;
-        ellipse(x, y, 12 + rand(seedOffset + i * 6.2) * 20, 5 + rand(seedOffset + i * 8.4) * 11, "rgba(92,174,53,0.5)", 1);
-      }
-    };
+    if (this.currentInterior === "shanksHouse") {
+      this.drawInterior(ctx);
+      return;
+    }
+    this.drawSky(ctx);
 
-    ctx.imageSmoothingEnabled = true;
+    this.drawBackgroundBlocks(ctx);
+    this.drawBlocks(ctx);
+  },
 
-    const water = pattern("water", "#0788a8");
-    const sand = pattern("sand", "#f1d17b");
-    const grass = pattern("grass", "#72c85a");
-    const dirt = pattern("dirt", "#d9bd7e");
-    const grassSoft = "rgba(101, 185, 63, 0.58)";
-    const flowerSoft = "rgba(255, 244, 158, 0.36)";
+  drawSky(ctx) {
+    const sky = GP.Assets.get && GP.Assets.get("skyTexture");
+    if (!sky) {
+      const fallback = ctx.createLinearGradient(0, 0, 0, this.world.height);
+      fallback.addColorStop(0, "#6fb7d7");
+      fallback.addColorStop(0.55, "#b8d7d6");
+      fallback.addColorStop(1, "#e8d2a3");
+      ctx.fillStyle = fallback;
+      ctx.fillRect(0, 0, this.world.width, this.world.height);
+      return;
+    }
 
-    ctx.fillStyle = water;
-    ctx.fillRect(0, 0, this.world.width, this.world.height);
+    const drawH = this.world.height;
+    const drawW = sky.width * (drawH / sky.height);
+    for (let x = 0; x < this.world.width; x += drawW) {
+      ctx.drawImage(sky, x, 0, drawW + 1, drawH);
+    }
+  },
 
-    ellipse(1600, 1560, 1445, 1325, "rgba(255,255,255,0.2)", 0.45);
-    ellipse(1600, 1560, 1420, 1300, sand);
-    ellipse(1600, 1540, 1250, 1130, grass);
-    ellipse(1600, 1580, 970, 850, grass, 0.88);
-
+  drawBackgroundBlocks(ctx) {
+    this.ensureBlocks();
+    const data = this.ensureCustomMap();
+    const size = this.blockSize;
     ctx.save();
-    ctx.strokeStyle = "rgba(255,255,255,0.58)";
-    ctx.lineWidth = 14;
-    ctx.beginPath();
-    ctx.ellipse(1600, 1560, 1450, 1320, 0, 0, Math.PI * 2);
-    ctx.stroke();
-    ctx.strokeStyle = "rgba(255,255,255,0.28)";
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.ellipse(1600, 1560, 1510, 1370, 0, 0, Math.PI * 2);
-    ctx.stroke();
+    ctx.globalAlpha = 0.72;
+    for (const block of this.backgroundBlocks || []) {
+      this.drawBlockCell(ctx, block.type, block.col * size, block.row * size, size, true);
+    }
+    Object.keys(data.background).forEach(key => {
+      const pos = this.parseMapKey(key);
+      if (!this.inBounds(pos.col, pos.row)) return;
+      this.drawBlockCell(ctx, data.background[key], pos.col * size, pos.row * size, size, true);
+    });
     ctx.restore();
+  },
 
-    const northSouth = [[1600, 820], [1605, 1160], [1600, 1510], [1600, 1980], [1600, 2440]];
-    const westEast = [[690, 1280], [1080, 1315], [1500, 1530], [1700, 1530], [2110, 1320], [2520, 1280]];
-    const westCamp = [[890, 990], [1170, 1160], [1410, 1390]];
-    const eastCamp = [[2310, 990], [2040, 1160], [1790, 1390]];
+  drawBlocks(ctx) {
+    const blocks = this.getActiveBlocks();
+    const size = this.blockSize;
 
-    pathStroke(northSouth, 188, grassSoft, 0.5);
-    pathStroke(westEast, 184, grassSoft, 0.5);
-    pathStroke(westCamp, 132, grassSoft, 0.5);
-    pathStroke(eastCamp, 132, grassSoft, 0.5);
-    pathStroke(northSouth, 124, dirt);
-    pathStroke(westEast, 120, dirt);
-    pathStroke(westCamp, 78, dirt);
-    pathStroke(eastCamp, 78, dirt);
+    for (let row = 0; row < blocks.length; row++) {
+      for (let col = 0; col < blocks[row].length; col++) {
+        const type = blocks[row][col];
+        if (!this.isDrawableBlock(type)) continue;
 
-    ellipse(820, 875, 365, 255, grassSoft, 0.55);
-    ellipse(2380, 875, 365, 255, grassSoft, 0.55);
-    ellipse(820, 875, 320, 220, dirt);
-    ellipse(2380, 875, 320, 220, dirt);
-    ellipse(1600, 1538, 295, 190, dirt);
-    ellipse(1600, 2070, 280, 155, dirt);
-
-    rect(1320, 2040, 560, 430, dirt);
-    rect(1390, 2110, 420, 90, dirt);
-    rect(1552, 1920, 96, 600, dirt);
-
-    scatterAlongPath(northSouth, 95, 130, grassSoft, flowerSoft, 10);
-    scatterAlongPath(westEast, 90, 128, grassSoft, flowerSoft, 200);
-    scatterAlongPath(westCamp, 42, 84, grassSoft, flowerSoft, 400);
-    scatterAlongPath(eastCamp, 42, 84, grassSoft, flowerSoft, 600);
-    grassTufts(820, 875, 330, 230, 70, 800);
-    grassTufts(2380, 875, 330, 230, 70, 1000);
-    grassTufts(1600, 1538, 300, 200, 48, 1200);
-
-    for (let i = 0; i < 70; i++) {
-      const x = 340 + i * 37 % 2500;
-      const y = 390 + i * 73 % 2240;
-      if (this.isLand(x, y) && !this.isDock(x, y)) {
-        ellipse(x, y, 10 + i % 8, 4 + i % 5, i % 3 === 0 ? "rgba(255,255,255,0.18)" : "rgba(32,105,45,0.18)", 1);
+        const x = col * size;
+        const y = row * size;
+        this.drawBlockCell(ctx, type, x, y, size, false);
       }
     }
   },
 
+  drawInterior(ctx) {
+    ctx.fillStyle = "#15100d";
+    ctx.fillRect(0, 0, this.world.width, this.world.height);
+    const wall = ctx.createLinearGradient(0, 0, 0, this.world.height);
+    wall.addColorStop(0, "#33251d");
+    wall.addColorStop(1, "#18110d");
+    ctx.fillStyle = wall;
+    ctx.fillRect(0, 0, this.world.width, this.world.height);
+    this.drawInteriorBackgroundBlocks(ctx);
+    this.drawBlocks(ctx);
+  },
+
+  drawInteriorBackgroundBlocks(ctx) {
+    this.ensureInteriorBlocks();
+    const size = this.blockSize;
+    ctx.save();
+    ctx.globalAlpha = 0.78;
+    for (let row = 0; row < this.interiorBackgroundBlocks.length; row++) {
+      for (let col = 0; col < this.interiorBackgroundBlocks[row].length; col++) {
+        const type = this.interiorBackgroundBlocks[row][col];
+        if (!type) continue;
+        this.drawBlockCell(ctx, type, col * size, row * size, size, true);
+      }
+    }
+    ctx.restore();
+  },
+
+  drawBlockCell(ctx, type, x, y, size, background) {
+    const spec = this.blockCells[type];
+    const fallback = {
+      grass: "#6bbf45",
+      dirt: "#8b5c34",
+      sand: "#d7b566",
+      stone: "#777777",
+      wood: "#8d5a2b",
+      plank: "#b87332",
+      roof: "#b74324",
+      brick: "#777777",
+      water: "#169bd7",
+      leaves: "#4fa83d",
+      palmWood: "#8a5a29",
+      palmLeaves: "#2f8f35",
+      darkStone: "#303033",
+      ironOre: "#aab6c4",
+      goldOre: "#d6a32d",
+      plaster: "#e8dfcf",
+      ropeNet: "#a8793a",
+      coral: "#d6536c",
+      doorClosedTop: "#764822",
+      doorClosedBottom: "#764822",
+      doorOpenTop: "#9a602d",
+      doorOpenBottom: "#9a602d"
+    };
+    const atlas = spec && GP.Assets.get && GP.Assets.get(spec.atlas);
+
+    if (atlas && spec) {
+      const cellW = Math.floor(atlas.width / spec.cols);
+      const cellH = Math.floor(atlas.height / spec.rows);
+      ctx.drawImage(atlas, spec.cell[0] * cellW, spec.cell[1] * cellH, cellW, cellH, x, y, size, size);
+    } else {
+      ctx.fillStyle = fallback[type] || "#7d6a43";
+      ctx.fillRect(x, y, size, size);
+    }
+
+    ctx.strokeStyle = background ? "rgba(18, 30, 28, 0.12)" : "rgba(12, 28, 22, 0.22)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x + 0.5, y + 0.5, size - 1, size - 1);
+  },
+
   getVisibleProps(camera, canvas, zoom = 1) {
-    const pad = 240;
+    const pad = 260;
     const viewW = canvas.width / zoom;
     const viewH = canvas.height / zoom;
     const left = camera.x - pad;
     const right = camera.x + viewW + pad;
     const top = camera.y - pad;
     const bottom = camera.y + viewH + pad;
-
-    return this.props.concat(this.natureProps, this.interactables).filter(prop => (
+    return this.props.concat(this.natureProps || [], this.interactables).filter(prop => (
       prop.x + prop.w / 2 >= left &&
       prop.x - prop.w / 2 <= right &&
       prop.y + prop.h / 2 >= top &&
@@ -344,20 +694,11 @@ GP.GameMap = {
   },
 
   getVisibleGroundProps(camera, canvas, zoom = 1) {
-    const pad = 240;
+    const pad = 260;
     const viewW = canvas.width / zoom;
-    const viewH = canvas.height / zoom;
     const left = camera.x - pad;
     const right = camera.x + viewW + pad;
-    const top = camera.y - pad;
-    const bottom = camera.y + viewH + pad;
-
-    return this.groundProps.filter(prop => (
-      prop.x + prop.w / 2 >= left &&
-      prop.x - prop.w / 2 <= right &&
-      prop.y + prop.h / 2 >= top &&
-      prop.y - prop.h / 2 <= bottom
-    ));
+    return this.groundProps.filter(prop => prop.x + prop.w / 2 >= left && prop.x - prop.w / 2 <= right);
   },
 
   drawProp(ctx, prop) {
@@ -365,7 +706,6 @@ GP.GameMap = {
       GP.Assets.drawNature(ctx, prop.nature, prop.x, prop.y, prop.w, prop.h);
       return;
     }
-
     const w = prop.used && prop.prop === "chest" ? prop.w * 0.74 : prop.w;
     const h = prop.used && prop.prop === "chest" ? prop.h * 0.74 : prop.h;
     GP.Assets.drawProp(ctx, prop.prop, prop.x, prop.y, w, h);

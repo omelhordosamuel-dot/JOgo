@@ -2,18 +2,25 @@ window.GP = window.GP || {};
 
 GP.CONFIG = {
   world: {
-    width: 3200,
-    height: 3200,
-    spawn: { x: 1600, y: 2070 }
+    width: 5200,
+    height: 900,
+    spawn: { x: 720, y: 624 },
+    groundY: 624,
+    blockSize: 48
   },
   camera: {
-    zoom: 1.95
+    zoom: 1.45
   },
   player: {
     radius: 12,
     speed: 3.55,
     hp: 130,
-    damage: 16
+    damage: 9
+  },
+  mastery: {
+    baseRequired: 8,
+    growth: 2,
+    levelGrowth: 1.1
   },
   quest: {
     objective: 5
@@ -49,33 +56,41 @@ GP.CONFIG = {
     }
   },
   questNpcs: [
-    { id: "noviceBandits", x: 1015, y: 1115, r: 18, color: "#35d96f" },
-    { id: "eastBandits", x: 2185, y: 1115, r: 18, color: "#52b7ff" }
+    {
+      id: "blacksmith",
+      x: 980,
+      y: 624,
+      r: 18,
+      name: "Ferreiro",
+      title: "Mestre das Forjas",
+      spriteId: "npcBlacksmith",
+      dialog: "Traga minerios quando o sistema de crafting estiver pronto. Eu vou cuidar das armas."
+    },
   ],
   campEnemies: {
     noviceBandits: {
       questId: "noviceBandits",
-      count: 5,
+      count: 0,
       spawnPoints: [
-        { x: 690, y: 795 },
-        { x: 820, y: 750 },
-        { x: 955, y: 805 },
-        { x: 735, y: 930 },
-        { x: 910, y: 965 }
+        { x: 1280, y: 650 },
+        { x: 1430, y: 650 },
+        { x: 1580, y: 650 },
+        { x: 1760, y: 650 },
+        { x: 1960, y: 650 }
       ],
-      type: { nome: "Bandido Fraco", vida: 32, dano: 5, velocidade: 1.15, cor: "#c94735", xp: 10, moedas: 4 }
+      type: { nome: "Bandido Fraco", vida: 32, dano: 5, velocidade: 1.15, cor: "#c94735", xp: 10, masteryXp: 6, moedas: 4, spriteId: "enemyWeak" }
     },
     eastBandits: {
       questId: "eastBandits",
-      count: 5,
+      count: 0,
       spawnPoints: [
-        { x: 2235, y: 795 },
-        { x: 2380, y: 760 },
-        { x: 2525, y: 820 },
-        { x: 2275, y: 955 },
-        { x: 2470, y: 965 }
+        { x: 3620, y: 650 },
+        { x: 3790, y: 650 },
+        { x: 3980, y: 650 },
+        { x: 4170, y: 650 },
+        { x: 4380, y: 650 }
       ],
-      type: { nome: "Bandido Forte", vida: 68, dano: 11, velocidade: 1.25, cor: "#8f3bff", xp: 20, moedas: 9 }
+      type: { nome: "Bandido Forte", vida: 68, dano: 11, velocidade: 1.25, cor: "#8f3bff", xp: 20, masteryXp: 10, moedas: 9, spriteId: "enemyStrong" }
     }
   },
   fruits: [
@@ -87,8 +102,8 @@ GP.CONFIG = {
     { nome: "Luz", raridade: "Lendaria", chance: 1, cor: "#fff27a", skill: "Raio de Luz", especial: "Julgamento Solar" }
   ],
   enemies: [
-    { nome: "Bandido", vida: 45, dano: 8, velocidade: 1.45, cor: "#d83b3b", xp: 12, moedas: 5 },
-    { nome: "Pirata Forte", vida: 80, dano: 13, velocidade: 1.12, cor: "#8f3bff", xp: 22, moedas: 10 },
-    { nome: "Marinheiro Rebelde", vida: 62, dano: 10, velocidade: 1.28, cor: "#3b8cff", xp: 17, moedas: 8 }
+    { nome: "Bandido", vida: 45, dano: 8, velocidade: 1.45, cor: "#d83b3b", xp: 12, masteryXp: 7, moedas: 5, spriteId: "enemyWeak" },
+    { nome: "Pirata Forte", vida: 80, dano: 13, velocidade: 1.12, cor: "#8f3bff", xp: 22, masteryXp: 11, moedas: 10, spriteId: "enemyStrong" },
+    { nome: "Marinheiro Rebelde", vida: 62, dano: 10, velocidade: 1.28, cor: "#3b8cff", xp: 17, masteryXp: 9, moedas: 8, spriteId: "enemyStrong" }
   ]
 };

@@ -14,18 +14,23 @@
       <h1 class="menu-title">GABRIEL PIECE</h1>
       <p class="menu-subtitle">Aventure-se pelos mares, lute contra piratas e desperte poderes de fruta.</p>
       <div class="menu-actions">
-        <button id="startButton" class="menu-button primary" onclick="iniciarJogo()" disabled>Carregando...</button>
+        <button id="startButton" class="menu-button primary" onclick="mostrarMenuMundos()" disabled>Carregando...</button>
         <button class="menu-button secondary" onclick="mostrarControles()">Controles</button>
+        <button id="resetProgressButton" class="menu-button danger" onclick="resetarProgresso()">Resetar progresso</button>
+      </div>
+      <div id="worldMenu" class="world-menu hidden">
+        <button class="menu-button primary" onclick="criarNovoMundo()">Criar novo mundo</button>
+        <button id="openWorldButton" class="menu-button secondary" onclick="abrirMundo()">Abrir mundo</button>
       </div>
       <div id="menuInfo" class="menu-info">
-        WASD para mover, mouse para atacar com o slot 1 e E para interagir.
+        WASD para mover, mouse para atacar com o slot 1 e E para inventario/interagir.
       </div>
     </div>
   </div>
 
   <div id="spinBox" class="overlay hidden">
     <h1>Giro de Fruta</h1>
-    <p>Custo: 25 moedas</p>
+    <p id="spinCost">Custo: 25 moedas</p>
     <div id="spinResultado">Girando...</div>
     <button onclick="fecharSpin()">Continuar</button>
   </div>
@@ -80,7 +85,7 @@
 
   <div id="hotbar">
     <div class="hotbar-slot active equipped" data-slot="0">
-      <img class="slot-item-icon" src="assets/combat/base-punch-icon.png" alt="Estilo de luta base">
+      <img class="slot-item-icon" src="assets/generated/runtime/ui-icon-base-punch.png" alt="Estilo de luta base">
       <div class="slot-key">1</div>
     </div>
     <div class="hotbar-slot" data-slot="1"><div class="slot-key">2</div></div>
@@ -91,6 +96,183 @@
     <div class="hotbar-slot" data-slot="6"><div class="slot-key">7</div></div>
     <div class="hotbar-slot" data-slot="7"><div class="slot-key">8</div></div>
     <div class="hotbar-slot" data-slot="8"><div class="slot-key">9</div></div>
+  </div>
+
+  <div id="inventoryPanel" class="inventory-panel hidden" aria-hidden="true">
+    <div class="inventory-card">
+      <div class="inventory-header">
+        <div>
+          <div class="inventory-kicker">Mochila</div>
+          <div class="inventory-title">Inventario</div>
+        </div>
+        <button class="inventory-close" type="button" onclick="fecharInventario()" aria-label="Fechar inventario">x</button>
+      </div>
+      <div class="inventory-body">
+        <div class="inventory-section-title">Itens</div>
+        <div id="inventoryGrid" class="inventory-grid"></div>
+        <div class="inventory-section-title">Recursos</div>
+        <div id="inventoryStats" class="inventory-stats"></div>
+      </div>
+    </div>
+  </div>
+
+  <button id="adminOpenButton" class="admin-open-button" type="button" onclick="abrirAdmin()">Admin</button>
+
+  <div id="adminPanel" class="admin-panel hidden">
+    <div class="admin-card">
+      <div class="admin-header">
+        <div>
+          <div class="admin-kicker">Controle de teste</div>
+          <div class="admin-title">Painel Admin</div>
+        </div>
+        <button class="admin-close" type="button" onclick="fecharAdmin()" aria-label="Fechar painel">x</button>
+      </div>
+
+      <div id="adminLogin" class="admin-login">
+        <label class="admin-label" for="adminPassword">Senha</label>
+        <div class="admin-password-row">
+          <input id="adminPassword" class="admin-input" type="password" inputmode="numeric" autocomplete="off" placeholder="00000000">
+          <button class="admin-button primary" type="button" onclick="entrarAdmin()">Entrar</button>
+        </div>
+      </div>
+
+      <div id="adminControls" class="admin-controls hidden">
+        <div class="admin-grid">
+          <label class="admin-label">Item
+            <select id="adminItemSelect" class="admin-input"></select>
+          </label>
+          <button class="admin-button primary" type="button" onclick="adminPegarItem()">Pegar e equipar</button>
+        </div>
+
+        <div class="admin-grid three">
+          <label class="admin-label">Nivel
+            <input id="adminLevelInput" class="admin-input" type="number" min="1" max="999" value="1">
+          </label>
+          <label class="admin-label">Maestria soco
+            <input id="adminFistMasteryInput" class="admin-input" type="number" min="0" max="999" value="0">
+          </label>
+          <label class="admin-label">Maestria espada
+            <input id="adminSwordMasteryInput" class="admin-input" type="number" min="0" max="999" value="0">
+          </label>
+        </div>
+
+        <div class="admin-grid four">
+          <label class="admin-label">Saude
+            <input id="adminStatSaudeInput" class="admin-input" type="number" min="0" max="999" value="0">
+          </label>
+          <label class="admin-label">Corpo
+            <input id="adminStatCorpoInput" class="admin-input" type="number" min="0" max="999" value="0">
+          </label>
+          <label class="admin-label">Espada
+            <input id="adminStatEspadaInput" class="admin-input" type="number" min="0" max="999" value="0">
+          </label>
+          <label class="admin-label">Fruta
+            <input id="adminStatFrutaInput" class="admin-input" type="number" min="0" max="999" value="0">
+          </label>
+        </div>
+
+        <div class="admin-actions">
+          <button class="admin-button" type="button" onclick="adminAplicarBuild()">Aplicar niveis</button>
+          <button class="admin-button" type="button" onclick="adminCurar()">Curar</button>
+        </div>
+
+        <div class="admin-section-title">Editor de mapa</div>
+        <div class="admin-grid four">
+          <label class="admin-label">Bloco
+            <select id="adminMapBlockSelect" class="admin-input"></select>
+          </label>
+          <label class="admin-label">Camada
+            <select id="adminMapLayerSelect" class="admin-input">
+              <option value="solid">Solido</option>
+              <option value="background">Fundo passavel</option>
+              <option value="invisible">Invisivel solido</option>
+              <option value="npcMarker">Marcador NPC</option>
+              <option value="imageMarker">Marcador imagem</option>
+            </select>
+          </label>
+          <label class="admin-label">Ferramenta
+            <select id="adminMapToolSelect" class="admin-input">
+              <option value="paint">Colocar</option>
+              <option value="erase">Apagar</option>
+            </select>
+          </label>
+          <button id="adminMapToggleButton" class="admin-button primary" type="button" onclick="adminToggleMapEditor()">Ativar editor</button>
+        </div>
+
+        <div class="admin-actions map-actions">
+          <button class="admin-button" type="button" onclick="adminSalvarMapa()">Salvar mapa</button>
+          <button class="admin-button" type="button" onclick="adminExportarMapa()">Exportar codigo</button>
+          <button class="admin-button danger" type="button" onclick="adminLimparMapa()">Limpar edits</button>
+        </div>
+        <textarea id="adminMapExport" class="admin-input admin-map-export" readonly placeholder="O codigo do mapa exportado aparece aqui."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <div id="statsPanel" class="stats-panel">
+    <div class="stats-title">Estatisticas</div>
+    <div class="stats-points">Pontos: <span id="statPointsHud">0</span></div>
+    <div class="stat-row" data-stat="saude">
+      <div class="stat-icon">&#9829;</div>
+      <div class="stat-info">
+        <div class="stat-name">Saude</div>
+        <div class="stat-level">Nivel <span id="statSaudeHud">0</span></div>
+      </div>
+      <button class="stat-plus" type="button" onclick="uparStat('saude')" aria-label="Upar saude">+</button>
+    </div>
+    <div class="stat-row" data-stat="corpo">
+      <div class="stat-icon">&#9994;</div>
+      <div class="stat-info">
+        <div class="stat-name">Corpo a corpo</div>
+        <div class="stat-level">Nivel <span id="statCorpoHud">0</span></div>
+      </div>
+      <button class="stat-plus" type="button" onclick="uparStat('corpo')" aria-label="Upar corpo a corpo">+</button>
+    </div>
+    <div class="stat-row" data-stat="espada">
+      <div class="stat-icon">&#9876;</div>
+      <div class="stat-info">
+        <div class="stat-name">Espada</div>
+        <div class="stat-level">Nivel <span id="statEspadaHud">0</span></div>
+      </div>
+      <button class="stat-plus" type="button" onclick="uparStat('espada')" aria-label="Upar espada">+</button>
+    </div>
+    <div class="stat-row" data-stat="fruta">
+      <div class="stat-icon">&#10022;</div>
+      <div class="stat-info">
+        <div class="stat-name">Fruta</div>
+        <div class="stat-level">Nivel <span id="statFrutaHud">0</span></div>
+      </div>
+      <button class="stat-plus" type="button" onclick="uparStat('fruta')" aria-label="Upar fruta">+</button>
+    </div>
+  </div>
+
+  <div id="masteryPanel" class="mastery-panel">
+    <div class="mastery-head">
+      <div>
+        <div class="mastery-style">Estilo de Luta Base</div>
+        <div class="mastery-count">Maestria <span id="fistMasteryHud">0</span></div>
+        <div class="mastery-xp"><span id="fistMasteryXpHud">0</span>/<span id="fistMasteryMaxHud">8</span> MX</div>
+      </div>
+    </div>
+    <div class="mastery-bar"><div id="fistMasteryBar" class="mastery-bar-fill"></div></div>
+    <div class="mastery-skill" id="skillZRow">
+      <div class="skill-key">Z</div>
+      <div class="skill-info">
+        <div class="skill-name">Soco no Ar: Modelo Gabriel</div>
+        <div class="skill-meta" id="skillZMeta">Mas. 5</div>
+      </div>
+      <div class="skill-lock" id="skillZLock" aria-label="Bloqueado"></div>
+      <div class="skill-cooldown" id="skillZCooldown"></div>
+    </div>
+    <div class="mastery-skill locked" id="skillXRow">
+      <div class="skill-key">X</div>
+      <div class="skill-info">
+        <div class="skill-name">Impacto do Corsario: Modelo Gabriel</div>
+        <div class="skill-meta" id="skillXMeta">Mas. 10</div>
+      </div>
+      <div class="skill-lock" id="skillXLock" aria-label="Bloqueado"></div>
+      <div class="skill-cooldown" id="skillXCooldown"></div>
+    </div>
   </div>
 
   <div id="questCompleteNotice" class="quest-complete-notice hidden">
@@ -109,8 +291,10 @@
 
   <script src="js/config.js"></script>
   <script src="js/utils.js"></script>
+  <script src="js/assetManifest.js"></script>
   <script src="js/assets.js"></script>
   <script src="js/ui.js"></script>
+  <script src="js/customMapData.js"></script>
   <script src="js/map.js"></script>
   <script src="js/entities.js"></script>
   <script src="js/game.js"></script>

@@ -8,12 +8,36 @@ const mime = {
   ".html": "text/html; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
-  ".png": "image/png"
+  ".png": "image/png",
+  ".svg": "image/svg+xml"
 };
 
 http.createServer((req, res) => {
   const requestPath = decodeURIComponent(req.url.split("?")[0]);
-  const relativePath = requestPath === "/" ? "Index.html" : requestPath.replace(/^\/+/, "");
+
+  if (req.method === "POST" && requestPath === "/__save-map") {
+    let body = "";
+    req.setEncoding("utf8");
+    req.on("data", chunk => {
+      body += chunk;
+      if (body.length > 1024 * 1024 * 3) req.destroy();
+    });
+    req.on("end", () => {
+      const output = path.resolve(root, "js", "customMapData.js");
+      fs.writeFile(output, body, "utf8", error => {
+        if (error) {
+          res.writeHead(500, { "Content-Type": "application/json; charset=utf-8" });
+          res.end(JSON.stringify({ ok: false, error: error.message }));
+          return;
+        }
+        res.writeHead(200, { "Content-Type": "application/json; charset=utf-8" });
+        res.end(JSON.stringify({ ok: true, file: "js/customMapData.js" }));
+      });
+    });
+    return;
+  }
+
+  const relativePath = requestPath === "/" ? "index.html" : requestPath.replace(/^\/+/, "");
   const filePath = path.resolve(root, relativePath);
 
   if (!filePath.startsWith(root)) {

@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+  <defs>
+    <filter id="s" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="4" stdDeviation="3" flood-color="#050203" flood-opacity=".85"/>
+    </filter>
+    <linearGradient id="blade" x1="20" y1="8" x2="76" y2="88">
+      <stop stop-color="#444a55"/>
+      <stop offset=".42" stop-color="#08090d"/>
+      <stop offset=".58" stop-color="#171a22"/>
+      <stop offset="1" stop-color="#000"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="12" y1="20" x2="84" y2="78">
+      <stop stop-color="#fff0a0"/>
+      <stop offset=".34" stop-color="#dca83d"/>
+      <stop offset="1" stop-color="#6a3a13"/>
+    </linearGradient>
+  </defs>
+  <g filter="url(#s)" transform="rotate(-38 48 48)">
+    <path d="M48 4c5 10 8 21 8 34v31H40V38c0-13 3-24 8-34Z" fill="url(#blade)" stroke="#dedede" stroke-width="2"/>
+    <path d="M48 8v58" stroke="#737b8e" stroke-width="2" opacity=".75"/>
+    <path d="M23 50h50c4 0 7 3 7 7v3H16v-3c0-4 3-7 7-7Z" fill="url(#gold)" stroke="#ffe08a" stroke-width="2"/>
+    <path d="M38 65h20v18c0 5-4 9-10 9s-10-4-10-9V65Z" fill="#611a25" stroke="#ffd26b" stroke-width="2"/>
+    <path d="M42 69h12v17H42z" fill="#171014"/>
+    <circle cx="48" cy="57" r="8" fill="#941f2e" stroke="#ffe08a" stroke-width="3"/>
+    <circle cx="48" cy="57" r="3" fill="#ffd665"/>
+  </g>
+</svg>
